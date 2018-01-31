@@ -1,0 +1,72 @@
+--- a/include/turtle/mock.hpp	2018-01-31 18:43:05.201459086 +0100
++++ b/include/turtle/mock.hpp	2018-01-31 18:37:39.201776250 +0100
+@@ -71,6 +71,23 @@
+             BOOST_PP_STRINGIZE(t) ); \
+         return t##_mock_; \
+     }
++#define MOCK_METHOD_DECLARE_HELPER(S, t, tpn) \
++    mutable mock::detail::function< MOCK_FUNCTION_TYPE((S), tpn) > t##_mock_; \
++    mock::detail::function< MOCK_FUNCTION_TYPE((S), tpn) >& t##_mock( \
++        const mock::detail::context&, \
++        boost::unit_test::const_string instance ) const;
++#define MOCK_METHOD_DEFINE_HELPER(C, S, t, tpn) \
++    mock::detail::function< MOCK_FUNCTION_TYPE((S), tpn) >& C::t##_mock( \
++        const mock::detail::context&, \
++        boost::unit_test::const_string instance ) const \
++    { \
++        mock::detail::configure( *this, t##_mock_, \
++            instance.substr( 0, instance.rfind( BOOST_PP_STRINGIZE(t) ) ), \
++            MOCK_TYPE_NAME(*this), \
++            BOOST_PP_STRINGIZE(t) ); \
++        return t##_mock_; \
++    }
++
+ 
+ #define MOCK_PARAM(z, n, d) \
+     BOOST_PP_COMMA_IF(n) d, n >::type p##n
+@@ -91,6 +108,17 @@
+         return MOCK_ANONYMOUS_HELPER(t)( \
+             BOOST_PP_ENUM_PARAMS(n, p) ); \
+     }
++#define MOCK_METHOD_DECLARE_AUX(M, n, S, t, c, tpn) \
++    MOCK_DECL(M, n, S, c, tpn);
++#define MOCK_METHOD_DEFINE_AUX(C, M, n, S, t, c, tpn) \
++    MOCK_DECL(C::M, n, S, c, tpn) \
++    { \
++        BOOST_MPL_ASSERT_RELATION( n, ==, \
++            boost::function_types::function_arity< \
++                MOCK_FUNCTION_TYPE((S), tpn) >::value ); \
++        return MOCK_ANONYMOUS_HELPER(t)( \
++            BOOST_PP_ENUM_PARAMS(n, p) ); \
++    }
+ 
+ #define MOCK_METHOD_EXT(M, n, S, t) \
+     MOCK_METHOD_AUX(M, n, S, t,,) \
+@@ -99,6 +127,12 @@
+ #define MOCK_CONST_METHOD_EXT(M, n, S, t) \
+     MOCK_METHOD_AUX(M, n, S, t, const,) \
+     MOCK_METHOD_HELPER(S, t,)
++#define MOCK_CONST_METHOD_DECLARE_EXT(M, n, S, t) \
++    MOCK_METHOD_DECLARE_AUX(M, n, S, t, const,) \
++    MOCK_METHOD_DECLARE_HELPER(S, t,)
++#define MOCK_CONST_METHOD_DEFINE_EXT(C, M, n, S, t) \
++    MOCK_METHOD_DEFINE_AUX(C, M, n, S, t, const,) \
++    MOCK_METHOD_DEFINE_HELPER(C, S, t,)
+ #define MOCK_NON_CONST_METHOD_EXT(M, n, S, t) \
+     MOCK_METHOD_AUX(M, n, S, t,,) \
+     MOCK_METHOD_HELPER(S, t,)
+@@ -189,6 +223,14 @@
+     MOCK_CONST_METHOD_EXT(M, n, \
+         MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
+         MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
++#define MOCK_CONST_METHOD_DECLARE(M, n, ...) \
++    MOCK_CONST_METHOD_DECLARE_EXT(M, n, \
++        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
++        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
++#define MOCK_CONST_METHOD_DEFINE(C, M, n, ...) \
++    MOCK_CONST_METHOD_DEFINE_EXT(C, M, n, \
++        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
++        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
+ #define MOCK_NON_CONST_METHOD(M, n, ...) \
+     MOCK_NON_CONST_METHOD_EXT(M, n, \
+         MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
