@@ -21,7 +21,7 @@
 +        return t##_mock_; \
 +    }
 +
- 
+
  #define MOCK_PARAM(z, n, d) \
      BOOST_PP_COMMA_IF(n) d, n >::type p##n
 @@ -91,17 +108,48 @@
@@ -39,7 +39,7 @@
 +        return MOCK_ANONYMOUS_HELPER(t)( \
 +            BOOST_PP_ENUM_PARAMS(n, p) ); \
 +    }
- 
+
  #define MOCK_METHOD_EXT(M, n, S, t) \
      MOCK_METHOD_AUX(M, n, S, t,,) \
      MOCK_METHOD_AUX(M, n, S, t, const,) \
@@ -70,10 +70,43 @@
 +#define MOCK_NON_CONST_METHOD_DEFINE_EXT(C, M, n, S, t) \
 +    MOCK_METHOD_DEFINE_AUX(C, M, n, S, t,,) \
 +    MOCK_METHOD_DEFINE_HELPER(C, S, t,)
- 
+
  #define MOCK_METHOD_EXT_TPL(M, n, S, t) \
      MOCK_METHOD_AUX(M, n, S, t,, typename) \
-@@ -144,6 +192,18 @@
+@@ -118,12 +166,32 @@
+     M T() const { return MOCK_ANONYMOUS_HELPER(t)(); } \
+     M T() { return MOCK_ANONYMOUS_HELPER(t)(); } \
+     MOCK_METHOD_HELPER(T(), t,)
++#define MOCK_CONVERSION_OPERATOR_DECLARE(M, T, t) \
++    M T() const; \
++    M T(); \
++    MOCK_METHOD_DECLARE_HELPER(T(), t,)
++#define MOCK_CONVERSION_OPERATOR_DEFINE(C, M, T, t) \
++    C::M T() const { return MOCK_ANONYMOUS_HELPER(t)(); } \
++    C::M T() { return MOCK_ANONYMOUS_HELPER(t)(); } \
++    MOCK_METHOD_DEFINE_HELPER(C, T(), t,)
+ #define MOCK_CONST_CONVERSION_OPERATOR(M, T, t) \
+     M T() const { return MOCK_ANONYMOUS_HELPER(t)(); } \
+     MOCK_METHOD_HELPER(T(), t,)
++#define MOCK_CONST_CONVERSION_OPERATOR_DECLARE(M, T, t) \
++    M T() const; \
++    MOCK_METHOD_DECLARE_HELPER(T(), t,)
++#define MOCK_CONST_CONVERSION_OPERATOR_DEFINE(C, M, T, t) \
++    C::M T() const { return MOCK_ANONYMOUS_HELPER(t)(); } \
++    MOCK_METHOD_DEFINE_HELPER(C, T(), t,)
+ #define MOCK_NON_CONST_CONVERSION_OPERATOR(M, T, t) \
+     M T() { return MOCK_ANONYMOUS_HELPER(t)(); } \
+     MOCK_METHOD_HELPER(T(), t,)
++#define MOCK_NON_CONST_CONVERSION_OPERATOR_DECLARE(M, T, t) \
++    M T(); \
++    MOCK_METHOD_DECLARE_HELPER(T(), t,)
++#define MOCK_NON_CONST_CONVERSION_OPERATOR_DEFINE(C, M, T, t) \
++    C::M T() { return MOCK_ANONYMOUS_HELPER(t)(); } \
++    MOCK_METHOD_DEFINE_HELPER(C, T(), t,)
+
+ #define MOCK_CONVERSION_OPERATOR_TPL(M, T, t) \
+     M T() const { return MOCK_ANONYMOUS_HELPER(t)(); } \
+@@ -144,6 +212,18 @@
          static mock::detail::function< MOCK_FUNCTION_TYPE((S), tpn) > f; \
          return f( context, instance ); \
      }
@@ -89,10 +122,45 @@
 +        static mock::detail::function< MOCK_FUNCTION_TYPE((S), tpn) > f; \
 +        return f( context, instance ); \
 +    }
- 
+
  #define MOCK_CONSTRUCTOR_AUX(T, n, A, t, tpn) \
      T( MOCK_PARAMS(n, void A, tpn) ) \
-@@ -170,6 +230,18 @@
+@@ -151,15 +231,34 @@
+         MOCK_HELPER(t)( BOOST_PP_ENUM_PARAMS(n, p) ); \
+     } \
+     MOCK_FUNCTION_HELPER(void A, t, static, tpn)
++#define MOCK_CONSTRUCTOR_DECLARE_AUX(T, n, A, t, tpn) \
++    T( MOCK_PARAMS(n, void A, tpn) ); \
++    MOCK_FUNCTION_DECLARE_HELPER(void A, t, static, tpn)
++#define MOCK_CONSTRUCTOR_DEFINE_AUX(T, n, A, t, tpn) \
++    T::T( MOCK_PARAMS(n, void A, tpn) ) \
++    { \
++        MOCK_HELPER(t)( BOOST_PP_ENUM_PARAMS(n, p) ); \
++    } \
++    MOCK_FUNCTION_DEFINE_HELPER(void A, T::t, , tpn)
+
+ #define MOCK_CONSTRUCTOR(T, n, A, t) \
+     MOCK_CONSTRUCTOR_AUX(T, n, A, t,)
++#define MOCK_CONSTRUCTOR_DECLARE(T, n, A, t) \
++    MOCK_CONSTRUCTOR_DECLARE_AUX(T, n, A, t,)
++#define MOCK_CONSTRUCTOR_DEFINE(T, n, A, t) \
++    MOCK_CONSTRUCTOR_DEFINE_AUX(T, n, A, t,)
+ #define MOCK_CONSTRUCTOR_TPL(T, n, A, t) \
+     MOCK_CONSTRUCTOR_AUX(T, n, A, t, typename)
+
+ #define MOCK_DESTRUCTOR(T, t) \
+     T() { try { MOCK_ANONYMOUS_HELPER(t)(); } catch( ... ) {} } \
+     MOCK_METHOD_HELPER(void(), t,)
++#define MOCK_DESTRUCTOR_DECLARE(T, t) \
++    T(); \
++    MOCK_METHOD_DECLARE_HELPER(void(), t,)
++#define MOCK_DESTRUCTOR_DEFINE(C, T, t) \
++    C::T() { try { MOCK_ANONYMOUS_HELPER(t)(); } catch( ... ) {} } \
++    MOCK_METHOD_DEFINE_HELPER(C, void(), t,)
+
+ #define MOCK_FUNCTION_AUX(F, n, S, t, s, tpn) \
+     MOCK_FUNCTION_HELPER(S, t, s, tpn) \
+@@ -170,6 +269,18 @@
                  MOCK_FUNCTION_TYPE((S), tpn) >::value ); \
          return MOCK_HELPER(t)( BOOST_PP_ENUM_PARAMS(n, p) ); \
      }
@@ -108,10 +176,10 @@
 +                MOCK_FUNCTION_TYPE((S), tpn) >::value ); \
 +        return MOCK_HELPER(t)( BOOST_PP_ENUM_PARAMS(n, p) ); \
 +    }
- 
+
  #ifdef MOCK_VARIADIC_MACROS
- 
-@@ -180,19 +252,48 @@
+
+@@ -180,19 +291,48 @@
  #define MOCK_METHOD_SIGNATURE(M, n, S, t) \
      typedef MOCK_FUNCTION_TYPE((S),) BOOST_PP_CAT(t,_sig_type); \
      MOCK_METHOD_EXT(M, n, BOOST_PP_CAT(t,_sig_type), t)
@@ -157,10 +225,10 @@
 +    MOCK_NON_CONST_METHOD_DEFINE_EXT(C, M, n, \
 +        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
 +        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
- 
+
  #define MOCK_METHOD_TPL(M, n, ...) \
      MOCK_METHOD_EXT_TPL(M, n, \
-@@ -212,12 +313,32 @@
+@@ -212,12 +352,32 @@
          MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
          MOCK_VARIADIC_ELEM_1(__VA_ARGS__, F), \
          inline,)
@@ -174,7 +242,7 @@
 +        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
 +        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, F), \
 +        inline,)
- 
+
  #define MOCK_STATIC_METHOD(F, n, ...) \
      MOCK_FUNCTION_AUX(F, n, \
          MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
@@ -190,6 +258,6 @@
 +        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
 +        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, F), \
 +        static,)
- 
+
  #define MOCK_STATIC_METHOD_TPL(F, n, ...) \
      MOCK_FUNCTION_AUX(F, n, \
