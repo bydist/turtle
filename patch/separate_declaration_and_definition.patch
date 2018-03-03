@@ -24,7 +24,7 @@
 
  #define MOCK_PARAM(z, n, d) \
      BOOST_PP_COMMA_IF(n) d, n >::type p##n
-@@ -91,17 +108,48 @@
+@@ -91,39 +108,117 @@
          return MOCK_ANONYMOUS_HELPER(t)( \
              BOOST_PP_ENUM_PARAMS(n, p) ); \
      }
@@ -70,10 +70,46 @@
 +#define MOCK_NON_CONST_METHOD_DEFINE_EXT(C, M, n, S, t) \
 +    MOCK_METHOD_DEFINE_AUX(C, M, n, S, t,,) \
 +    MOCK_METHOD_DEFINE_HELPER(C, S, t,)
-
+ 
  #define MOCK_METHOD_EXT_TPL(M, n, S, t) \
      MOCK_METHOD_AUX(M, n, S, t,, typename) \
-@@ -118,12 +166,32 @@
+     MOCK_METHOD_AUX(M, n, S, t, const, typename) \
+     MOCK_METHOD_HELPER(S, t, typename)
++#define MOCK_METHOD_DECLARE_EXT_TPL(M, n, S, t) \
++    MOCK_METHOD_DECLARE_AUX(M, n, S, t,, typename) \
++    MOCK_METHOD_DECLARE_AUX(M, n, S, t, const, typename) \
++    MOCK_METHOD_DECLARE_HELPER(S, t, typename)
++#define MOCK_METHOD_DEFINE_EXT_TPL(T, C, M, n, S, t) \
++    template < T > \
++    MOCK_METHOD_DEFINE_AUX(C, M, n, S, t,, typename) \
++    template < T > \
++    MOCK_METHOD_DEFINE_AUX(C, M, n, S, t, const, typename) \
++    template < T > \
++    MOCK_METHOD_DEFINE_HELPER(C, S, t, typename)
+ #define MOCK_CONST_METHOD_EXT_TPL(M, n, S, t) \
+     MOCK_METHOD_AUX(M, n, S, t, const, typename) \
+     MOCK_METHOD_HELPER(S, t, typename)
++#define MOCK_CONST_METHOD_DECLARE_EXT_TPL(M, n, S, t) \
++    MOCK_METHOD_DECLARE_AUX(M, n, S, t, const, typename) \
++    MOCK_METHOD_DECLARE_HELPER(S, t, typename)
++#define MOCK_CONST_METHOD_DEFINE_EXT_TPL(T, C, M, n, S, t) \
++    template< T > \
++    MOCK_METHOD_DEFINE_AUX(C, M, n, S, t, const, typename) \
++    template< T > \
++    MOCK_METHOD_DEFINE_HELPER(C, S, t, typename)
+ #define MOCK_NON_CONST_METHOD_EXT_TPL(M, n, S, t) \
+     MOCK_METHOD_AUX(M, n, S, t,, typename) \
+     MOCK_METHOD_HELPER(S, t, typename)
++#define MOCK_NON_CONST_METHOD_DECLARE_EXT_TPL(M, n, S, t) \
++    MOCK_METHOD_DECLARE_AUX(M, n, S, t,, typename) \
++    MOCK_METHOD_DECLARE_HELPER(S, t, typename)
++#define MOCK_NON_CONST_METHOD_DEFINE_EXT_TPL(T, C, M, n, S, t) \
++    template < T > \
++    MOCK_METHOD_DEFINE_AUX(C, M, n, S, t,, typename) \
++    template < T > \
++    MOCK_METHOD_DEFINE_HELPER(C, S, t, typename)
+ 
+ #define MOCK_CONVERSION_OPERATOR(M, T, t) \
      M T() const { return MOCK_ANONYMOUS_HELPER(t)(); } \
      M T() { return MOCK_ANONYMOUS_HELPER(t)(); } \
      MOCK_METHOD_HELPER(T(), t,)
@@ -106,7 +142,7 @@
 
  #define MOCK_CONVERSION_OPERATOR_TPL(M, T, t) \
      M T() const { return MOCK_ANONYMOUS_HELPER(t)(); } \
-@@ -144,6 +212,18 @@
+@@ -144,6 +239,18 @@
          static mock::detail::function< MOCK_FUNCTION_TYPE((S), tpn) > f; \
          return f( context, instance ); \
      }
@@ -125,7 +161,7 @@
 
  #define MOCK_CONSTRUCTOR_AUX(T, n, A, t, tpn) \
      T( MOCK_PARAMS(n, void A, tpn) ) \
-@@ -151,15 +231,34 @@
+@@ -151,15 +258,34 @@
          MOCK_HELPER(t)( BOOST_PP_ENUM_PARAMS(n, p) ); \
      } \
      MOCK_FUNCTION_HELPER(void A, t, static, tpn)
@@ -160,7 +196,7 @@
 
  #define MOCK_FUNCTION_AUX(F, n, S, t, s, tpn) \
      MOCK_FUNCTION_HELPER(S, t, s, tpn) \
-@@ -170,6 +269,18 @@
+@@ -170,6 +296,18 @@
                  MOCK_FUNCTION_TYPE((S), tpn) >::value ); \
          return MOCK_HELPER(t)( BOOST_PP_ENUM_PARAMS(n, p) ); \
      }
@@ -179,7 +215,7 @@
 
  #ifdef MOCK_VARIADIC_MACROS
 
-@@ -180,19 +291,48 @@
+@@ -180,44 +318,119 @@
  #define MOCK_METHOD_SIGNATURE(M, n, S, t) \
      typedef MOCK_FUNCTION_TYPE((S),) BOOST_PP_CAT(t,_sig_type); \
      MOCK_METHOD_EXT(M, n, BOOST_PP_CAT(t,_sig_type), t)
@@ -225,10 +261,48 @@
 +    MOCK_NON_CONST_METHOD_DEFINE_EXT(C, M, n, \
 +        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
 +        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
-
++
+ 
  #define MOCK_METHOD_TPL(M, n, ...) \
      MOCK_METHOD_EXT_TPL(M, n, \
-@@ -212,12 +352,32 @@
+         MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
+         MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
++#define MOCK_METHOD_DECLARE_TPL(M, n, ...) \
++    MOCK_METHOD_EXT_TPL(M, n, \
++        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
++        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
++#define MOCK_METHOD_DEFINE_TPL(T, C, M, ...) \
++    MOCK_METHOD_DEFINE_EXT_TPL(T, C, M, \
++        MOCK_VARIADIC_ELEM_0(__VA_ARGS__ ), \
++        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, MOCK_SIGNATURE(M)), \
++        MOCK_VARIADIC_ELEM_2(__VA_ARGS__, M, M))
+ #define MOCK_CONST_METHOD_TPL(M, n, ...) \
+     MOCK_CONST_METHOD_EXT_TPL(M, n, \
+         MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
+         MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
++#define MOCK_CONST_METHOD_DECLARE_TPL(M, n, ...) \
++    MOCK_CONST_METHOD_DECLARE_EXT_TPL(M, n, \
++        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
++        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
++#define MOCK_CONST_METHOD_DEFINE_TPL(T, C, M, n, ...) \
++    MOCK_CONST_METHOD_DEFINE_EXT_TPL(T, C, M, n, \
++        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
++        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
+ #define MOCK_NON_CONST_METHOD_TPL(M, n, ...) \
+     MOCK_NON_CONST_METHOD_EXT_TPL(M, n, \
+         MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
+         MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
++#define MOCK_NON_CONST_METHOD_DECLARE_TPL(M, n, ...) \
++    MOCK_NON_CONST_METHOD_DECLARE_EXT_TPL(M, n, \
++        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
++        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
++#define MOCK_NON_CONST_METHOD_DEFINE_TPL(T, C, M, n, ...) \
++    MOCK_NON_CONST_METHOD_DEFINE_EXT_TPL(T,  C, M, n, \
++        MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
++        MOCK_VARIADIC_ELEM_1(__VA_ARGS__, M))
+ 
+ #define MOCK_FUNCTION(F, n, ...) \
+     MOCK_FUNCTION_AUX(F, n, \
          MOCK_VARIADIC_ELEM_0(__VA_ARGS__), \
          MOCK_VARIADIC_ELEM_1(__VA_ARGS__, F), \
          inline,)

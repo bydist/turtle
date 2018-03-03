@@ -1,14 +1,14 @@
 set(package turtle)
-set(version 1.3.0)
+set(version master-20180120)
 
 byd__package__info(${package}
     MAINTAINER_NAME "David Callu"
     MAINTAINER_EMAIL "callu.david@gmail.com"
-    VERSION ${version}-7
+    VERSION ${version}-1
     ABI ${version}
     )
 
 byd__package__download_info(${package}
-    URL "https://sourceforge.net/projects/turtle/files/turtle/1.3.0/turtle-1.3.0.tar.bz2"
-    URL_HASH SHA1=8100f93d7f59fd0833385d235440078630f16e78
+    URL "https://github.com/ledocc/turtle/archive/master-20180120.tar.gz"
+    URL_HASH SHA1=da605f96bcccfc9de8ed93dc4d8734c44a4f44c7
 )
