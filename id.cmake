@@ -1,5 +1,5 @@
 set(package turtle)
-set(version master-20180120)
+set(version master-20181213)
 
 byd__package__info(${package}
     MAINTAINER_NAME "David Callu"
@@ -9,6 +9,6 @@ byd__package__info(${package}
     )
 
 byd__package__download_info(${package}
-    URL "https://github.com/ledocc/turtle/archive/master-20180120.tar.gz"
-    URL_HASH SHA1=da605f96bcccfc9de8ed93dc4d8734c44a4f44c7
+    URL "https://github.com/ledocc/turtle/archive/master-20181213.tar.gz"
+    URL_HASH SHA1=84a5d158092d63594e305fc2e02bc405c758a53e
 )
